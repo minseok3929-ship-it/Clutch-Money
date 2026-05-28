@@ -1,0 +1,16 @@
+name: ClutchRPG
+version: ${version}
+main: com.clutch.rpg.core.ClutchRPGPlugin
+api-version: '1.21'
+author: Clutch
+prefix: CLUTCH RPG
+description: First combat prototype for the CLUTCH RPG dense forest test area.
+commands:
+  crpg:
+    description: ClutchRPG administrator test command.
+    usage: /crpg <stats|stat|level|item|mob|boss|reload>
+    permission: clutchrpg.admin
+permissions:
+  clutchrpg.admin:
+    description: Allows ClutchRPG prototype admin commands.
+    default: op

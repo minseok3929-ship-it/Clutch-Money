@@ -1,0 +1,19 @@
+package com.clutch.rpg.items;
+
+public enum OptionType {
+    ATTACK_DAMAGE,
+    SKILL_DAMAGE,
+    CRIT_CHANCE,
+    CRIT_DAMAGE,
+    ARMOR_PENETRATION,
+    MAX_HEALTH,
+    DAMAGE_REDUCTION,
+    MOVE_SPEED,
+    DASH_COOLDOWN_REDUCTION,
+    DROP_RATE,
+    GOLD_GAIN,
+    BLEED_DAMAGE,
+    SHOCK_DAMAGE,
+    BURN_DAMAGE,
+    FROST_DURATION
+}
