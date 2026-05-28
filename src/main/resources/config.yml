@@ -1,0 +1,6 @@
+# ClutchRPG prototype config. Balance is intentionally simple for combat-feel tests.
+forest:
+  respawnTicks: 80
+combat:
+  critBaseDamage: 1.5
+  dashBaseCooldownMillis: 4500
