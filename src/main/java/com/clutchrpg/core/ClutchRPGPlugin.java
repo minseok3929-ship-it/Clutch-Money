@@ -11,8 +11,12 @@ import com.clutchrpg.commands.PlayerCommands;
 import com.clutchrpg.gui.StatsGui;
 import com.clutchrpg.items.DropService;
 import com.clutchrpg.items.ItemFactory;
+import com.clutchrpg.mobs.MobBehaviorController;
 import com.clutchrpg.mobs.MobDeathListener;
 import com.clutchrpg.mobs.MobManager;
+import com.clutchrpg.mobs.MobPresentationListener;
+import com.clutchrpg.mobs.MobProjectileListener;
+import com.clutchrpg.mobs.SpawnPointManager;
 import com.clutchrpg.player.PlayerLifecycleListener;
 import com.clutchrpg.player.PlayerManager;
 import com.clutchrpg.storage.SQLiteStorage;
@@ -27,6 +31,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 public final class ClutchRPGPlugin extends JavaPlugin {
     private SQLiteStorage storage;
     private PlayerManager playerManager;
+    private SpawnPointManager spawnPointManager;
+    private MobBehaviorController mobBehaviorController;
 
     @Override public void onEnable() {
         saveDefaultConfig();
@@ -38,33 +44,42 @@ public final class ClutchRPGPlugin extends JavaPlugin {
         ItemFactory itemFactory = new ItemFactory(keys);
         DamageService damageService = new DamageService(playerManager, itemFactory);
         MobManager mobManager = new MobManager(keys);
+        spawnPointManager = new SpawnPointManager(this, mobManager);
+        spawnPointManager.load();
         DropService dropService = new DropService(playerManager, itemFactory);
         ForestGuardianBoss forestGuardianBoss = new ForestGuardianBoss(this, keys, mobManager);
         StatsGui statsGui = new StatsGui(playerManager);
+        mobBehaviorController = new MobBehaviorController(this, mobManager);
 
         PluginManager pm = Bukkit.getPluginManager();
         pm.registerEvents(new PlayerLifecycleListener(playerManager, itemFactory), this);
         pm.registerEvents(statsGui, this);
-        pm.registerEvents(new CombatListener(itemFactory, damageService, cooldowns), this);
+        pm.registerEvents(new CombatListener(this, itemFactory, damageService, cooldowns), this);
         pm.registerEvents(new DashListener(cooldowns), this);
         pm.registerEvents(new PotionListener(cooldowns), this);
         pm.registerEvents(new MobDeathListener(mobManager, playerManager, dropService), this);
+        pm.registerEvents(new MobPresentationListener(this, mobManager), this);
+        pm.registerEvents(new MobProjectileListener(), this);
         pm.registerEvents(new BossDeathListener(forestGuardianBoss, playerManager, dropService), this);
 
         PlayerCommands playerCommands = new PlayerCommands(statsGui);
         requireCommand("스텟").setExecutor(playerCommands);
         requireCommand("가방").setExecutor(playerCommands);
         requireCommand("도움말").setExecutor(playerCommands);
-        AdminCommand adminCommand = new AdminCommand(this, mobManager, forestGuardianBoss, itemFactory, dropService);
+        AdminCommand adminCommand = new AdminCommand(this, mobManager, spawnPointManager, forestGuardianBoss, itemFactory, dropService);
         PluginCommand crpg = requireCommand("crpg");
         crpg.setExecutor(adminCommand);
         crpg.setTabCompleter(adminCommand);
 
+        spawnPointManager.start();
+        mobBehaviorController.start();
         Bukkit.getOnlinePlayers().forEach(playerManager::load);
-        getComponentLogger().info(Chat.PREFIX.append(Chat.text("ClutchRPG enabled - forest combat MVP ready.")));
+        getComponentLogger().info(Chat.PREFIX.append(Chat.text("ClutchRPG enabled - visual forest combat MVP ready.")));
     }
 
     @Override public void onDisable() {
+        if (spawnPointManager != null) spawnPointManager.stop();
+        if (mobBehaviorController != null) mobBehaviorController.stop();
         if (playerManager != null) playerManager.saveAll(Bukkit.getOnlinePlayers());
         if (storage != null) storage.close();
     }

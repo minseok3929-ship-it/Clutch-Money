@@ -16,7 +16,7 @@ commands:
     usage: /도움말
   crpg:
     description: CLUTCH RPG 관리자 명령어
-    usage: /crpg reload|mob spawn <mobId>|boss spawn forest_guardian|item give <weaponType> <rarity>
+    usage: /crpg reload|mob spawn <mobId>|boss spawn forest_guardian|item give <weaponType> <rarity>|spawnpoint add/list/remove
 permissions:
   clutchrpg.admin:
     description: CLUTCH RPG 관리자 권한

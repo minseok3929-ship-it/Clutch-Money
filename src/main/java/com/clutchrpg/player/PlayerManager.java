@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Player;
@@ -58,7 +59,10 @@ public final class PlayerManager {
             leveled = true;
         }
         if (leveled) {
-            player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 0.9f, 1.35f);
+            player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.35f);
+            player.playSound(player.getLocation(), Sound.UI_TOAST_CHALLENGE_COMPLETE, 0.7f, 1.6f);
+            player.getWorld().spawnParticle(Particle.TOTEM_OF_UNDYING, player.getLocation().add(0, 1, 0), 70, 0.55, 0.8, 0.55, 0.08);
+            player.getWorld().spawnParticle(Particle.END_ROD, player.getLocation().add(0, 1, 0), 35, 0.55, 0.8, 0.55, 0.05);
             Chat.send(player, "레벨 업! 현재 Lv." + profile.level() + " / 스텟 포인트 +5");
             applyDerivedStats(player);
         }

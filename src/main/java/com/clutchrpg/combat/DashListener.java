@@ -2,6 +2,7 @@ package com.clutchrpg.combat;
 
 import com.clutchrpg.util.Chat;
 import com.clutchrpg.util.CooldownTracker;
+import com.clutchrpg.util.ParticleEffects;
 import java.time.Duration;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
@@ -26,11 +27,16 @@ public final class DashListener implements Listener {
             Chat.send(player, "대쉬 재사용 대기: " + left + "초");
             return;
         }
-        cooldowns.set(player.getUniqueId(), "dash", Duration.ofSeconds(4));
-        Vector dir = player.getLocation().getDirection().normalize().multiply(1.55).setY(0.18);
-        player.setVelocity(dir);
-        player.getWorld().spawnParticle(Particle.CLOUD, player.getLocation(), 28, 0.35, 0.25, 0.35, 0.06);
-        player.getWorld().spawnParticle(Particle.ELECTRIC_SPARK, player.getLocation(), 18, 0.45, 0.25, 0.45, 0.04);
-        player.playSound(player.getLocation(), Sound.ENTITY_ENDER_DRAGON_FLAP, 0.45f, 1.7f);
+        cooldowns.set(player.getUniqueId(), "dash", Duration.ofSeconds(3));
+        Vector direction = player.getLocation().getDirection().normalize();
+        Vector velocity = direction.clone().multiply(1.75).setY(0.20);
+        player.setVelocity(velocity);
+        for (int i = 0; i < 8; i++) {
+            player.getWorld().spawnParticle(Particle.DUST, player.getLocation().subtract(direction.clone().multiply(i * 0.28)).add(0, 0.75, 0), 7, 0.18, 0.18, 0.18, 0, i % 2 == 0 ? ParticleEffects.CYAN_DUST : ParticleEffects.PURPLE_DUST);
+        }
+        player.getWorld().spawnParticle(Particle.CLOUD, player.getLocation(), 34, 0.35, 0.25, 0.35, 0.08);
+        player.getWorld().spawnParticle(Particle.ELECTRIC_SPARK, player.getLocation().add(direction.multiply(1.1)), 24, 0.45, 0.25, 0.45, 0.05);
+        player.playSound(player.getLocation(), Sound.ENTITY_ENDER_DRAGON_FLAP, 0.55f, 1.85f);
+        player.playSound(player.getLocation(), Sound.ITEM_TRIDENT_RIPTIDE_1, 0.55f, 1.45f);
     }
 }

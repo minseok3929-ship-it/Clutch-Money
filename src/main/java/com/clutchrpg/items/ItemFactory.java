@@ -23,24 +23,28 @@ public final class ItemFactory {
         ItemMeta meta = item.getItemMeta();
         String id = "forest_" + type.name().toLowerCase(Locale.ROOT) + "_" + System.nanoTime();
         double damage = type.baseDamage() + rarity.ordinal() * 3.5 + random.nextDouble(2.5);
-        List<String> options = rollOptions(rarity);
-        meta.displayName(Component.text(rarity.korean() + " 숲의 " + type.korean(), rarity.color()));
+        List<String> optionData = rollOptionData(rarity);
+        meta.displayName(Component.text("[" + rarity.korean() + "] 숲의 " + type.korean(), rarity.color()));
         List<Component> lore = new ArrayList<>();
-        lore.add(Component.text("울창한 숲 전투 프로토타입 장비", NamedTextColor.DARK_GRAY));
-        lore.add(Component.text("공격력 +" + String.format(Locale.KOREA, "%.1f", damage), NamedTextColor.GRAY));
-        lore.add(Component.text("요구 스텟: 없음", NamedTextColor.GRAY));
-        lore.add(Component.text("옵션", NamedTextColor.AQUA));
-        for (String option : options) lore.add(Component.text(" - " + option, NamedTextColor.LIGHT_PURPLE));
-        if (rarity == Rarity.LEGENDARY) lore.add(Component.text("고유 효과 슬롯 준비됨", NamedTextColor.GOLD));
-        if (rarity == Rarity.MYTHIC) lore.add(Component.text("플레이 스타일 변경 효과 슬롯 준비됨", NamedTextColor.RED));
+        lore.add(Component.text("희귀도: " + rarity.korean(), rarity.color()));
+        lore.add(Component.text("무기 종류: " + type.korean(), NamedTextColor.GRAY));
+        lore.add(Component.text("공격력 +" + format(damage), NamedTextColor.WHITE));
+        lore.add(Component.text("요구 힘: 없음", NamedTextColor.DARK_GRAY));
+        lore.add(Component.text("요구 민첩: 없음", NamedTextColor.DARK_GRAY));
+        lore.add(Component.empty());
+        lore.add(Component.text("랜덤 옵션", NamedTextColor.AQUA));
+        for (String option : optionData) lore.add(Component.text("  ◆ " + displayOption(option), NamedTextColor.LIGHT_PURPLE));
+        if (rarity == Rarity.EPIC) lore.add(Component.text("  ✦ 접두/접미 옵션 구조 적용", NamedTextColor.DARK_PURPLE));
+        if (rarity == Rarity.LEGENDARY) lore.add(Component.text("  ✦ 고유 효과 슬롯 준비됨", NamedTextColor.GOLD));
+        if (rarity == Rarity.MYTHIC) lore.add(Component.text("  ✦ 플레이 스타일 변경 효과 슬롯 준비됨", NamedTextColor.RED));
         meta.lore(lore);
         meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
         meta.getPersistentDataContainer().set(keys.itemId, PersistentDataType.STRING, id);
         meta.getPersistentDataContainer().set(keys.itemTier, PersistentDataType.INTEGER, 1);
         meta.getPersistentDataContainer().set(keys.rarity, PersistentDataType.STRING, rarity.name());
         meta.getPersistentDataContainer().set(keys.weaponType, PersistentDataType.STRING, type.name());
-        meta.getPersistentDataContainer().set(keys.requiredStats, PersistentDataType.STRING, "{}");
-        meta.getPersistentDataContainer().set(keys.randomOptions, PersistentDataType.STRING, String.join(";", options) + ";ATTACK_DAMAGE=" + damage);
+        meta.getPersistentDataContainer().set(keys.requiredStats, PersistentDataType.STRING, "STR=0;DEX=0;INT=0;VIT=0;LUK=0");
+        meta.getPersistentDataContainer().set(keys.randomOptions, PersistentDataType.STRING, String.join(";", optionData) + ";ATTACK_DAMAGE=" + damage);
         item.setItemMeta(meta);
         return item;
     }
@@ -71,15 +75,31 @@ public final class ItemFactory {
         return type.baseDamage();
     }
 
-    private List<String> rollOptions(Rarity rarity) {
+    private List<String> rollOptionData(Rarity rarity) {
         OptionType[] pool = OptionType.values();
         List<String> options = new ArrayList<>();
         int count = Math.min(rarity.optionSlots(), 3);
         for (int i = 0; i < count; i++) {
             OptionType type = pool[random.nextInt(pool.length)];
-            double value = 1.0 + random.nextDouble() * (rarity.ordinal() + 1) * 2.5;
-            options.add(type.name() + "=" + String.format(Locale.US, "%.2f", value) + " (" + type.korean() + ")");
+            double value = type == OptionType.MAX_HEALTH ? 8.0 + random.nextDouble() * (rarity.ordinal() + 1) * 8.0 : 1.0 + random.nextDouble() * (rarity.ordinal() + 1) * 2.5;
+            options.add(type.name() + "=" + String.format(Locale.US, "%.2f", value));
         }
         return options;
+    }
+
+    private String displayOption(String data) {
+        String[] parts = data.split("=");
+        if (parts.length != 2) return data;
+        try {
+            OptionType type = OptionType.valueOf(parts[0]);
+            double value = Double.parseDouble(parts[1]);
+            return type.korean() + " +" + format(value) + (type.percent() ? "%" : "");
+        } catch (IllegalArgumentException ex) {
+            return data;
+        }
+    }
+
+    private String format(double value) {
+        return String.format(Locale.KOREA, "%.1f", value);
     }
 }

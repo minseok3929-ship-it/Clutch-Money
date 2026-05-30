@@ -1,3 +1,8 @@
 forest:
   prototype: true
-  notes: "울창한 숲 RPG 전투 MVP - 손맛/이동감/드랍 기대감 우선"
+  notes: "울창한 숲 RPG 전투 MVP - 전투 연출/보스 패턴 가시성/드랍 기대감 우선"
+  spawn:
+    max-per-point: 5
+    respawn-min-seconds: 15
+    respawn-max-seconds: 25
+  spawn-points: {}

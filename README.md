@@ -8,13 +8,28 @@ Minecraft Paper 1.21.11 / Java 21 / Gradle 기준의 울창한 숲 RPG 전투 MV
 
 ## 주요 기능
 
-- `/스텟` GUI 기반 스텟 성장
+- `/스텟` GUI 기반 스텟 성장과 투자 효과 미리보기
 - STR/DEX/INT/VIT/LUK, 소프트캡, 레벨 50 성장 구조
-- 검 3타 콤보, 빠른 활 발사, 스태프 마법탄 폭발
-- 점프 중 Shift 대쉬, 포션 쿨타임
-- PersistentDataContainer 기반 장비 데이터와 COMMON/RARE/EPIC 실드랍
-- 울창한 숲 몬스터 4종과 보스 `숲의 수호자`
+- 검 3타 콤보: 청록 베기, 보라 반월 베기, 충격파 마무리
+- 활 에너지 화살: 청록/보라 파티클 궤적과 적중 폭발
+- 스태프 구체형 마법탄: 혼합 파티클 투사체와 범위 표시
+- 점프 중 Shift 대쉬: 3초 쿨타임과 잔상 파티클
+- PersistentDataContainer 기반 장비 데이터와 한글 옵션 로어
+- RARE/EPIC 드랍 액션바, 타이틀, 사운드, 파티클 연출
+- 울창한 숲 몬스터 4종의 체력 표시, 특수 행동, 사망 연출
+- 스폰 포인트 기반 몬스터 밀도 제어
+- BossBar와 선경고 장판을 갖춘 보스 `숲의 수호자`
 - SQLite 플레이어 데이터 저장
+
+## 관리자 명령어
+
+- `/crpg reload`
+- `/crpg mob spawn <mobId>`
+- `/crpg boss spawn forest_guardian`
+- `/crpg item give <weaponType> <rarity>`
+- `/crpg spawnpoint add <mobId>`
+- `/crpg spawnpoint list`
+- `/crpg spawnpoint remove <id>`
 
 ## 빌드
 

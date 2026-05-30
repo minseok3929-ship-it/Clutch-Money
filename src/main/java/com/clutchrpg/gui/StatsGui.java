@@ -33,7 +33,7 @@ public final class StatsGui implements Listener {
         StatType[] types = StatType.values();
         for (int i = 0; i < types.length; i++) {
             StatType type = types[i];
-            inv.setItem(slots[i], item(Material.LIME_DYE, type.name() + " (" + type.korean() + ")", "현재: " + profile.stat(type), "좌클릭 +1 / Shift 좌클릭 +5"));
+            inv.setItem(slots[i], item(Material.LIME_DYE, type.name() + " (" + type.korean() + ")", "현재: " + profile.stat(type), statPreview(type), "좌클릭 +1 / Shift 좌클릭 +5"));
         }
         inv.setItem(22, item(Material.HEART_OF_THE_SEA, "전투 파생 수치",
                 "치명타 확률: " + pct(StatCalculator.critChance(profile)),
@@ -62,8 +62,18 @@ public final class StatsGui implements Listener {
             return;
         }
         playerManager.applyDerivedStats(player);
-        Chat.send(player, type.korean() + " +" + amount + " 증가!");
+        Chat.send(player, type.korean() + " +" + amount + " 증가! " + statPreview(type));
         open(player);
+    }
+
+    private String statPreview(StatType type) {
+        return switch (type) {
+            case STR -> "투자 효과: 공격력 +0.8 / 체력 +2";
+            case DEX -> "투자 효과: 치명타 확률 +0.15% / 이동속도 +0.05%";
+            case INT -> "투자 효과: 스킬 피해 +1.0% / 상태이상 피해 +0.5%";
+            case VIT -> "투자 효과: 체력 +6 / 상태이상 저항 +0.1%";
+            case LUK -> "투자 효과: 드랍률 +0.1% / 희귀 장비 +0.03%";
+        };
     }
 
     private ItemStack item(Material material, String name, String... lore) {
