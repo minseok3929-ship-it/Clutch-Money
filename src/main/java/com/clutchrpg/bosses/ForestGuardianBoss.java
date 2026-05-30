@@ -101,14 +101,18 @@ public final class ForestGuardianBoss {
         Location center = boss.getLocation().clone();
         warnNearby(boss, "숲의 수호자가 내려찍기를 준비합니다!");
         boss.getWorld().playSound(center, Sound.ENTITY_RAVAGER_ROAR, 1.1f, 0.75f);
+        boss.getWorld().spawnParticle(Particle.DUST_PLUME, boss.getLocation().add(0, 0.2, 0), 45, 1.2, 0.12, 1.2, 0.04);
+        boss.getWorld().spawnParticle(Particle.BLOCK, boss.getLocation().add(0, 0.8, 0), 30, 0.9, 0.7, 0.9, 0.05, org.bukkit.Material.OAK_LOG.createBlockData());
         for (int i = 0; i < 6; i++) {
             final int tick = i;
-            Bukkit.getScheduler().runTaskLater(plugin, () -> ParticleEffects.ring(center, 4.2, Particle.DUST, tick % 2 == 0 ? ParticleEffects.RED_DUST : ParticleEffects.PURPLE_DUST, 72), i * 5L);
+            Bukkit.getScheduler().runTaskLater(plugin, () -> ParticleEffects.ring(center, 4.2, Particle.DUST, tick % 2 == 0 ? ParticleEffects.RED_DUST : ParticleEffects.WOOD_DUST, 72), i * 5L);
         }
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             if (!boss.isValid() || boss.isDead()) return;
+            ParticleEffects.expandingRing(center, 4.2, ParticleEffects.WOOD_DUST, 6, 1L, plugin);
             center.getWorld().spawnParticle(Particle.EXPLOSION, center, 4, 0.35, 0.15, 0.35, 0);
-            center.getWorld().spawnParticle(Particle.DUST_PLUME, center, 90, 3.0, 0.25, 3.0, 0.08);
+            center.getWorld().spawnParticle(Particle.DUST_PLUME, center, 120, 3.2, 0.3, 3.2, 0.09);
+            center.getWorld().spawnParticle(Particle.BLOCK, center, 45, 2.0, 0.25, 2.0, 0.08, org.bukkit.Material.OAK_LOG.createBlockData());
             center.getWorld().playSound(center, Sound.ENTITY_GENERIC_EXPLODE, 1.1f, 0.65f);
             center.getWorld().getNearbyEntities(center, 4.2, 2.5, 4.2).stream()
                     .filter(e -> e instanceof Player)
@@ -129,7 +133,13 @@ public final class ForestGuardianBoss {
         }
         while (zones.size() < 4) zones.add(boss.getLocation().clone().add(ThreadLocalRandom.current().nextDouble(-7, 7), 0, ThreadLocalRandom.current().nextDouble(-7, 7)));
         for (Location zone : zones) {
-            for (int i = 0; i < 5; i++) Bukkit.getScheduler().runTaskLater(plugin, () -> ParticleEffects.ring(zone, 2.2, Particle.DUST, ParticleEffects.GREEN_DUST, 42), i * 6L);
+            for (int i = 0; i < 5; i++) {
+                final int step = i;
+                Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                    ParticleEffects.ring(zone, 2.2, Particle.DUST, ParticleEffects.GREEN_DUST, 42);
+                    zone.getWorld().spawnParticle(Particle.DUST, zone.clone().add(0, 0.35 + step * 0.08, 0), 14, 0.45, 0.18, 0.45, 0, ParticleEffects.DARK_GREEN_DUST);
+                }, i * 6L);
+            }
             Bukkit.getScheduler().runTaskLater(plugin, () -> {
                 if (!boss.isValid() || boss.isDead()) return;
                 zone.getWorld().spawnParticle(Particle.DUST_PLUME, zone, 55, 1.6, 0.2, 1.6, 0.08);
@@ -139,7 +149,10 @@ public final class ForestGuardianBoss {
                         .filter(e -> e instanceof Player)
                         .map(e -> (Player) e)
                         .filter(player -> player.getLocation().distanceSquared(zone) <= 2.2 * 2.2)
-                        .forEach(player -> player.damage(18.0, boss));
+                        .forEach(player -> {
+                            player.damage(18.0, boss);
+                            player.setVelocity(player.getVelocity().setY(0.45));
+                        });
             }, 34L);
         }
     }
@@ -149,11 +162,15 @@ public final class ForestGuardianBoss {
         Location loc = boss.getLocation();
         for (int i = 0; i < 4; i++) {
             Location spawn = loc.clone().add(ThreadLocalRandom.current().nextDouble(-5, 5), 0, ThreadLocalRandom.current().nextDouble(-5, 5));
-            ParticleEffects.ring(spawn, 1.5, Particle.DUST, ParticleEffects.CYAN_DUST, 28);
+            for (int pulse = 0; pulse < 4; pulse++) {
+                final int step = pulse;
+                Bukkit.getScheduler().runTaskLater(plugin, () -> ParticleEffects.ring(spawn, 1.2 + step * 0.18, Particle.DUST, ParticleEffects.GREEN_DUST, 32), pulse * 5L);
+            }
+            Bukkit.getScheduler().runTaskLater(plugin, () -> spawn.getWorld().playSound(spawn, Sound.BLOCK_ENCHANTMENT_TABLE_USE, 0.75f, 1.35f), 14L);
             Bukkit.getScheduler().runTaskLater(plugin, () -> {
-                spawn.getWorld().spawnParticle(Particle.DUST, spawn.add(0, 0.6, 0), 35, 0.45, 0.45, 0.45, 0, ParticleEffects.GREEN_DUST);
+                spawn.getWorld().spawnParticle(Particle.DUST, spawn.clone().add(0, 0.6, 0), 45, 0.45, 0.45, 0.45, 0, ParticleEffects.GREEN_DUST);
                 mobManager.spawn(ThreadLocalRandom.current().nextBoolean() ? ForestMobType.FOREST_SLIME : ForestMobType.FOREST_WOLF, spawn);
-            }, 28L);
+            }, 20L);
         }
         loc.getWorld().playSound(loc, Sound.BLOCK_GRASS_BREAK, 1.0f, 0.6f);
     }
@@ -164,7 +181,7 @@ public final class ForestGuardianBoss {
         boss.getWorld().playSound(center, Sound.BLOCK_BEACON_POWER_SELECT, 0.9f, 0.7f);
         for (int i = 1; i <= 7; i++) {
             final double radius = i * 1.15;
-            Bukkit.getScheduler().runTaskLater(plugin, () -> ParticleEffects.ring(center, radius, Particle.DUST, ParticleEffects.PURPLE_DUST, 28 + (int) (radius * 8)), i * 6L);
+            Bukkit.getScheduler().runTaskLater(plugin, () -> ParticleEffects.ring(center, radius, Particle.DUST, ParticleEffects.WOOD_DUST, 28 + (int) (radius * 8)), i * 6L);
         }
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             if (!boss.isValid() || boss.isDead()) return;

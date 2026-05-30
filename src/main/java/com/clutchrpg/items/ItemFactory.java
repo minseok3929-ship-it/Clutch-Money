@@ -24,26 +24,38 @@ public final class ItemFactory {
         String id = "forest_" + type.name().toLowerCase(Locale.ROOT) + "_" + System.nanoTime();
         double damage = type.baseDamage() + rarity.ordinal() * 3.5 + random.nextDouble(2.5);
         List<String> optionData = rollOptionData(rarity);
+        int requiredStr = 4 + rarity.ordinal() * 3 + (type == WeaponType.SWORD ? 3 : 0);
+        int requiredDex = 3 + rarity.ordinal() * 2 + (type == WeaponType.BOW ? 4 : 0);
+        int requiredInt = type == WeaponType.STAFF ? 6 + rarity.ordinal() * 3 : 0;
         meta.displayName(Component.text("[" + rarity.korean() + "] 숲의 " + type.korean(), rarity.color()));
         List<Component> lore = new ArrayList<>();
-        lore.add(Component.text("희귀도: " + rarity.korean(), rarity.color()));
         lore.add(Component.text("무기 종류: " + type.korean(), NamedTextColor.GRAY));
-        lore.add(Component.text("공격력 +" + format(damage), NamedTextColor.WHITE));
-        lore.add(Component.text("요구 힘: 없음", NamedTextColor.DARK_GRAY));
-        lore.add(Component.text("요구 민첩: 없음", NamedTextColor.DARK_GRAY));
+        lore.add(Component.text("장비 티어: T1", NamedTextColor.GRAY));
+        lore.add(Component.text("요구 힘: " + requiredStr, NamedTextColor.DARK_GRAY));
+        lore.add(Component.text("요구 민첩: " + requiredDex, NamedTextColor.DARK_GRAY));
+        if (requiredInt > 0) lore.add(Component.text("요구 지력: " + requiredInt, NamedTextColor.DARK_GRAY));
         lore.add(Component.empty());
-        lore.add(Component.text("랜덤 옵션", NamedTextColor.AQUA));
-        for (String option : optionData) lore.add(Component.text("  ◆ " + displayOption(option), NamedTextColor.LIGHT_PURPLE));
-        if (rarity == Rarity.EPIC) lore.add(Component.text("  ✦ 접두/접미 옵션 구조 적용", NamedTextColor.DARK_PURPLE));
-        if (rarity == Rarity.LEGENDARY) lore.add(Component.text("  ✦ 고유 효과 슬롯 준비됨", NamedTextColor.GOLD));
-        if (rarity == Rarity.MYTHIC) lore.add(Component.text("  ✦ 플레이 스타일 변경 효과 슬롯 준비됨", NamedTextColor.RED));
+        lore.add(Component.text("공격력 +" + format(damage), NamedTextColor.WHITE));
+        List<String> normalOptions = optionData.stream().filter(option -> !isSpecialOption(option)).toList();
+        List<String> specialOptions = optionData.stream().filter(this::isSpecialOption).toList();
+        for (String option : normalOptions) lore.add(Component.text(displayOption(option), NamedTextColor.WHITE));
+        if (!specialOptions.isEmpty()) {
+            lore.add(Component.empty());
+            lore.add(Component.text("특수 옵션:", rarity.color()));
+            for (String option : specialOptions) lore.add(Component.text("- " + displayOption(option), NamedTextColor.LIGHT_PURPLE));
+        }
+        lore.add(Component.empty());
+        lore.add(Component.text("아이템 설명:", NamedTextColor.GRAY));
+        lore.add(Component.text("울창한 숲의 마력이 깃든 " + type.korean() + "입니다.", NamedTextColor.DARK_GREEN));
+        if (rarity == Rarity.LEGENDARY) lore.add(Component.text("전설 고유 효과 슬롯 준비됨", NamedTextColor.GOLD));
+        if (rarity == Rarity.MYTHIC) lore.add(Component.text("신화 플레이 스타일 변경 효과 슬롯 준비됨", NamedTextColor.RED));
         meta.lore(lore);
         meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
         meta.getPersistentDataContainer().set(keys.itemId, PersistentDataType.STRING, id);
         meta.getPersistentDataContainer().set(keys.itemTier, PersistentDataType.INTEGER, 1);
         meta.getPersistentDataContainer().set(keys.rarity, PersistentDataType.STRING, rarity.name());
         meta.getPersistentDataContainer().set(keys.weaponType, PersistentDataType.STRING, type.name());
-        meta.getPersistentDataContainer().set(keys.requiredStats, PersistentDataType.STRING, "STR=0;DEX=0;INT=0;VIT=0;LUK=0");
+        meta.getPersistentDataContainer().set(keys.requiredStats, PersistentDataType.STRING, "STR=" + requiredStr + ";DEX=" + requiredDex + ";INT=" + requiredInt + ";VIT=0;LUK=0");
         meta.getPersistentDataContainer().set(keys.randomOptions, PersistentDataType.STRING, String.join(";", optionData) + ";ATTACK_DAMAGE=" + damage);
         item.setItemMeta(meta);
         return item;
@@ -85,6 +97,17 @@ public final class ItemFactory {
             options.add(type.name() + "=" + String.format(Locale.US, "%.2f", value));
         }
         return options;
+    }
+
+
+    private boolean isSpecialOption(String data) {
+        String key = data.split("=")[0];
+        return key.equals(OptionType.BLEED_DAMAGE.name())
+                || key.equals(OptionType.SHOCK_DAMAGE.name())
+                || key.equals(OptionType.BURN_DAMAGE.name())
+                || key.equals(OptionType.FROST_DURATION.name())
+                || key.equals(OptionType.ARMOR_PENETRATION.name())
+                || key.equals(OptionType.DASH_COOLDOWN_REDUCTION.name());
     }
 
     private String displayOption(String data) {

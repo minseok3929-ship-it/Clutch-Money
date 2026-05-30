@@ -11,7 +11,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.entity.LivingEntity;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitTask;
 
@@ -37,7 +36,12 @@ public final class SpawnPointManager {
             World world = Bukkit.getWorld(point.getString("world", "world"));
             ForestMobType type = ForestMobType.byId(point.getString("mob", "forest_slime"));
             if (world == null || type == null) continue;
-            spawnPoints.add(new SpawnPoint(Integer.parseInt(key), type, new Location(world, point.getDouble("x"), point.getDouble("y"), point.getDouble("z"))));
+            int maxAlive = point.getInt("maxAlive", defaultMaxAlive(type));
+            double radius = point.getDouble("radius", defaultRadius(type));
+            int respawnSeconds = point.getInt("respawnInterval", defaultRespawn(type));
+            int batchMin = point.getInt("spawnBatchMin", defaultBatchMin(type));
+            int batchMax = point.getInt("spawnBatchMax", defaultBatchMax(type));
+            spawnPoints.add(new SpawnPoint(Integer.parseInt(key), type, new Location(world, point.getDouble("x"), point.getDouble("y"), point.getDouble("z")), maxAlive, radius, respawnSeconds, batchMin, batchMax));
         }
         spawnPoints.sort(Comparator.comparingInt(SpawnPoint::id));
     }
@@ -50,9 +54,9 @@ public final class SpawnPointManager {
         if (task != null) task.cancel();
     }
 
-    public SpawnPoint add(ForestMobType type, Location location) {
+    public SpawnPoint add(ForestMobType type, Location location, int maxAlive, double radius) {
         int id = spawnPoints.stream().mapToInt(SpawnPoint::id).max().orElse(0) + 1;
-        SpawnPoint point = new SpawnPoint(id, type, location.toBlockLocation().add(0.5, 0, 0.5));
+        SpawnPoint point = new SpawnPoint(id, type, location.toBlockLocation().add(0.5, 0, 0.5), maxAlive, radius, defaultRespawn(type), defaultBatchMin(type), defaultBatchMax(type));
         spawnPoints.add(point);
         save();
         return point;
@@ -82,23 +86,42 @@ public final class SpawnPointManager {
             plugin.getConfig().set(path + ".x", point.location().getX());
             plugin.getConfig().set(path + ".y", point.location().getY());
             plugin.getConfig().set(path + ".z", point.location().getZ());
+            plugin.getConfig().set(path + ".maxAlive", point.safeMaxAlive());
+            plugin.getConfig().set(path + ".radius", point.safeRadius());
+            plugin.getConfig().set(path + ".respawnInterval", point.safeRespawnSeconds());
+            plugin.getConfig().set(path + ".spawnBatchMin", point.safeBatchMin());
+            plugin.getConfig().set(path + ".spawnBatchMax", point.safeBatchMax());
         }
         plugin.saveConfig();
     }
 
     private void tick() {
-        int max = plugin.getConfig().getInt("forest.spawn.max-per-point", 5);
-        int minSeconds = plugin.getConfig().getInt("forest.spawn.respawn-min-seconds", 15);
-        int maxSeconds = plugin.getConfig().getInt("forest.spawn.respawn-max-seconds", 25);
         long now = System.currentTimeMillis();
         for (SpawnPoint point : spawnPoints) {
-            if (countAlive(point.id()) >= max) continue;
+            long alive = countAlive(point.id());
+            if (alive >= point.safeMaxAlive()) continue;
             if (nextSpawnAt.getOrDefault(point.id(), 0L) > now) continue;
-            Location spawn = point.location().clone().add(ThreadLocalRandom.current().nextDouble(-3.5, 3.5), 0, ThreadLocalRandom.current().nextDouble(-3.5, 3.5));
-            mobManager.spawn(point.mobType(), spawn, point.id());
-            int delay = ThreadLocalRandom.current().nextInt(Math.min(minSeconds, maxSeconds), Math.max(minSeconds, maxSeconds) + 1);
-            nextSpawnAt.put(point.id(), now + delay * 1000L);
+
+            int missing = point.safeMaxAlive() - (int) alive;
+            int requested = ThreadLocalRandom.current().nextInt(point.safeBatchMin(), point.safeBatchMax() + 1);
+            int count = Math.min(missing, requested);
+            for (int i = 0; i < count; i++) {
+                Location spawn = randomLocation(point);
+                mobManager.spawn(point.mobType(), spawn, point.id());
+            }
+            nextSpawnAt.put(point.id(), now + point.safeRespawnSeconds() * 1000L);
         }
+    }
+
+    private Location randomLocation(SpawnPoint point) {
+        double radius = point.safeRadius();
+        double angle = ThreadLocalRandom.current().nextDouble(Math.PI * 2.0);
+        double distance = Math.sqrt(ThreadLocalRandom.current().nextDouble()) * radius;
+        Location base = point.location().clone().add(Math.cos(angle) * distance, 0, Math.sin(angle) * distance);
+        World world = base.getWorld();
+        int y = world.getHighestBlockYAt(base) + 1;
+        base.setY(Math.max(point.location().getY(), y));
+        return base;
     }
 
     private long countAlive(int pointId) {
@@ -111,11 +134,59 @@ public final class SpawnPointManager {
 
     public void sendList(org.bukkit.command.CommandSender sender) {
         if (spawnPoints.isEmpty()) {
-            Chat.send(sender, "등록된 스폰 포인트가 없습니다.");
+            Chat.send(sender, "등록된 스폰 캠프가 없습니다.");
             return;
         }
         for (SpawnPoint point : spawnPoints) {
-            Chat.send(sender, "#" + point.id() + " " + point.mobType().koreanName() + " @ " + point.location().getWorld().getName() + " " + point.location().getBlockX() + ", " + point.location().getBlockY() + ", " + point.location().getBlockZ());
+            Chat.send(sender, "#" + point.id() + " " + point.mobType().koreanName()
+                    + " / 최대 " + point.safeMaxAlive() + " / 반경 " + (int) point.safeRadius()
+                    + " / 배치 " + point.safeBatchMin() + "~" + point.safeBatchMax()
+                    + " / " + point.location().getWorld().getName() + " " + point.location().getBlockX() + ", " + point.location().getBlockY() + ", " + point.location().getBlockZ());
         }
+    }
+
+    private int defaultMaxAlive(ForestMobType type) {
+        return switch (type) {
+            case FOREST_SLIME -> 10;
+            case GOBLIN -> 6;
+            case FOREST_WOLF -> 5;
+            case VINE_GOLEM -> 3;
+        };
+    }
+
+    private double defaultRadius(ForestMobType type) {
+        return switch (type) {
+            case FOREST_SLIME -> 10.0;
+            case GOBLIN -> 8.0;
+            case FOREST_WOLF -> 9.0;
+            case VINE_GOLEM -> 7.0;
+        };
+    }
+
+    private int defaultRespawn(ForestMobType type) {
+        return switch (type) {
+            case FOREST_SLIME -> 15;
+            case GOBLIN -> 20;
+            case FOREST_WOLF -> 18;
+            case VINE_GOLEM -> 24;
+        };
+    }
+
+    private int defaultBatchMin(ForestMobType type) {
+        return switch (type) {
+            case FOREST_SLIME -> 3;
+            case GOBLIN -> 2;
+            case FOREST_WOLF -> 1;
+            case VINE_GOLEM -> 1;
+        };
+    }
+
+    private int defaultBatchMax(ForestMobType type) {
+        return switch (type) {
+            case FOREST_SLIME -> 5;
+            case GOBLIN -> 4;
+            case FOREST_WOLF -> 2;
+            case VINE_GOLEM -> 1;
+        };
     }
 }

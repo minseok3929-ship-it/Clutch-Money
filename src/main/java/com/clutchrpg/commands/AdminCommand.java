@@ -48,11 +48,17 @@ public final class AdminCommand implements CommandExecutor, TabCompleter {
             Chat.send(sender, "인게임 관리자만 스폰/지급/스폰포인트 편집 명령어를 사용할 수 있습니다.");
             return true;
         }
-        if (args.length >= 3 && args[0].equalsIgnoreCase("spawnpoint") && args[1].equalsIgnoreCase("add")) {
+        if (args.length >= 5 && args[0].equalsIgnoreCase("spawnpoint") && args[1].equalsIgnoreCase("add")) {
             ForestMobType type = ForestMobType.byId(args[2]);
             if (type == null) { Chat.send(player, "알 수 없는 몬스터 ID입니다."); return true; }
-            SpawnPoint point = spawnPointManager.add(type, player.getLocation());
-            Chat.send(player, "스폰 포인트 #" + point.id() + " 등록: " + type.koreanName());
+            try {
+                int maxAlive = Integer.parseInt(args[3]);
+                double radius = Double.parseDouble(args[4]);
+                SpawnPoint point = spawnPointManager.add(type, player.getLocation(), maxAlive, radius);
+                Chat.send(player, "스폰 캠프 #" + point.id() + " 등록: " + type.koreanName() + " / 최대 " + point.safeMaxAlive() + " / 반경 " + (int) point.safeRadius());
+            } catch (NumberFormatException ex) {
+                Chat.send(player, "사용법: /crpg spawnpoint add <mobId> <maxAlive> <radius>");
+            }
             return true;
         }
         if (args.length >= 3 && args[0].equalsIgnoreCase("spawnpoint") && args[1].equalsIgnoreCase("remove")) {
@@ -87,7 +93,7 @@ public final class AdminCommand implements CommandExecutor, TabCompleter {
             }
             return true;
         }
-        Chat.send(sender, "/crpg reload | mob spawn <mobId> | boss spawn forest_guardian | item give <weaponType> <rarity> | spawnpoint add/list/remove");
+        Chat.send(sender, "/crpg reload | mob spawn <mobId> | boss spawn forest_guardian | item give <weaponType> <rarity> | spawnpoint add <mobId> <maxAlive> <radius> | list/remove");
         return true;
     }
 
@@ -102,6 +108,8 @@ public final class AdminCommand implements CommandExecutor, TabCompleter {
         if (args.length == 4 && args[0].equalsIgnoreCase("item")) return Arrays.stream(Rarity.values()).map(Enum::name).map(String::toLowerCase).toList();
         if (args.length == 2 && args[0].equalsIgnoreCase("spawnpoint")) return List.of("add", "list", "remove");
         if (args.length == 3 && args[0].equalsIgnoreCase("spawnpoint") && args[1].equalsIgnoreCase("add")) return Arrays.stream(ForestMobType.values()).map(ForestMobType::id).toList();
+        if (args.length == 4 && args[0].equalsIgnoreCase("spawnpoint") && args[1].equalsIgnoreCase("add")) return List.of("5", "6", "10");
+        if (args.length == 5 && args[0].equalsIgnoreCase("spawnpoint") && args[1].equalsIgnoreCase("add")) return List.of("8", "10", "12");
         if (args.length == 3 && args[0].equalsIgnoreCase("spawnpoint") && args[1].equalsIgnoreCase("remove")) return spawnPointManager.list().stream().map(point -> String.valueOf(point.id())).toList();
         return List.of();
     }
