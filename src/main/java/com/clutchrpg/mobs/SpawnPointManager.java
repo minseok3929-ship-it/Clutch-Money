@@ -145,48 +145,13 @@ public final class SpawnPointManager {
         }
     }
 
-    private int defaultMaxAlive(ForestMobType type) {
-        return switch (type) {
-            case FOREST_SLIME -> 10;
-            case GOBLIN -> 6;
-            case FOREST_WOLF -> 5;
-            case VINE_GOLEM -> 3;
-        };
-    }
+    private int defaultMaxAlive(ForestMobType type) { return mobManager.registry().definition(type).defaultMaxAlive(); }
 
-    private double defaultRadius(ForestMobType type) {
-        return switch (type) {
-            case FOREST_SLIME -> 10.0;
-            case GOBLIN -> 8.0;
-            case FOREST_WOLF -> 9.0;
-            case VINE_GOLEM -> 7.0;
-        };
-    }
+    private double defaultRadius(ForestMobType type) { return mobManager.registry().definition(type).defaultSpawnRadius(); }
 
-    private int defaultRespawn(ForestMobType type) {
-        return switch (type) {
-            case FOREST_SLIME -> 15;
-            case GOBLIN -> 20;
-            case FOREST_WOLF -> 18;
-            case VINE_GOLEM -> 24;
-        };
-    }
+    private int defaultRespawn(ForestMobType type) { return mobManager.registry().definition(type).defaultRespawnSeconds(); }
 
-    private int defaultBatchMin(ForestMobType type) {
-        return switch (type) {
-            case FOREST_SLIME -> 3;
-            case GOBLIN -> 2;
-            case FOREST_WOLF -> 1;
-            case VINE_GOLEM -> 1;
-        };
-    }
+    private int defaultBatchMin(ForestMobType type) { return mobManager.registry().definition(type).defaultBatchMin(); }
 
-    private int defaultBatchMax(ForestMobType type) {
-        return switch (type) {
-            case FOREST_SLIME -> 5;
-            case GOBLIN -> 4;
-            case FOREST_WOLF -> 2;
-            case VINE_GOLEM -> 1;
-        };
-    }
+    private int defaultBatchMax(ForestMobType type) { return mobManager.registry().definition(type).defaultBatchMax(); }
 }

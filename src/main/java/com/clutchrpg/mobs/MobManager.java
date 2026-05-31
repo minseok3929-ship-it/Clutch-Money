@@ -19,40 +19,34 @@ import org.bukkit.persistence.PersistentDataType;
 
 public final class MobManager {
     private final Keys keys;
+    private final CustomMobRegistry registry = new CustomMobRegistry();
 
     public MobManager(Keys keys) { this.keys = keys; }
+
+    public CustomMobRegistry registry() { return registry; }
 
     public LivingEntity spawn(ForestMobType type, Location location) {
         return spawn(type, location, -1);
     }
 
     public LivingEntity spawn(ForestMobType type, Location location, int spawnPointId) {
-        LivingEntity entity = (LivingEntity) location.getWorld().spawnEntity(location, type.entityType());
+        CustomMobDefinition definition = registry.definition(type);
+        LivingEntity entity = (LivingEntity) location.getWorld().spawnEntity(location, definition.entityType());
         entity.getPersistentDataContainer().set(keys.mobId, PersistentDataType.STRING, type.id());
         if (spawnPointId >= 0) entity.getPersistentDataContainer().set(keys.spawnPointId, PersistentDataType.INTEGER, spawnPointId);
         entity.setRemoveWhenFarAway(false);
-        applyStats(entity, type);
+        applyStats(entity, definition);
         applyVanillaControl(entity, type);
         updateName(entity);
         spawnPresentation(entity, type);
         return entity;
     }
 
-    private void applyStats(LivingEntity entity, ForestMobType type) {
-        if (entity.getAttribute(Attribute.MAX_HEALTH) != null) entity.getAttribute(Attribute.MAX_HEALTH).setBaseValue(type.health());
-        if (entity.getAttribute(Attribute.MOVEMENT_SPEED) != null) {
-            double speed = switch (type) {
-                case FOREST_SLIME -> 0.34;
-                case FOREST_WOLF -> 0.38;
-                case GOBLIN -> 0.30;
-                case VINE_GOLEM -> 0.18;
-            };
-            entity.getAttribute(Attribute.MOVEMENT_SPEED).setBaseValue(speed);
-        }
-        if (entity.getAttribute(Attribute.KNOCKBACK_RESISTANCE) != null && type == ForestMobType.VINE_GOLEM) {
-            entity.getAttribute(Attribute.KNOCKBACK_RESISTANCE).setBaseValue(0.82);
-        }
-        entity.setHealth(type.health());
+    private void applyStats(LivingEntity entity, CustomMobDefinition definition) {
+        if (entity.getAttribute(Attribute.MAX_HEALTH) != null) entity.getAttribute(Attribute.MAX_HEALTH).setBaseValue(definition.maxHealth());
+        if (entity.getAttribute(Attribute.MOVEMENT_SPEED) != null) entity.getAttribute(Attribute.MOVEMENT_SPEED).setBaseValue(definition.movementSpeed());
+        if (entity.getAttribute(Attribute.KNOCKBACK_RESISTANCE) != null) entity.getAttribute(Attribute.KNOCKBACK_RESISTANCE).setBaseValue(definition.knockbackResistance());
+        entity.setHealth(definition.maxHealth());
     }
 
     private void applyVanillaControl(LivingEntity entity, ForestMobType type) {

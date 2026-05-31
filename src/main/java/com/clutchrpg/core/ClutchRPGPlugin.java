@@ -17,6 +17,7 @@ import com.clutchrpg.mobs.MobManager;
 import com.clutchrpg.mobs.MobPresentationListener;
 import com.clutchrpg.mobs.MobProjectileListener;
 import com.clutchrpg.mobs.SpawnPointManager;
+import com.clutchrpg.mobs.VanillaMobSpawnListener;
 import com.clutchrpg.player.PlayerLifecycleListener;
 import com.clutchrpg.player.PlayerManager;
 import com.clutchrpg.storage.SQLiteStorage;
@@ -60,6 +61,7 @@ public final class ClutchRPGPlugin extends JavaPlugin {
         pm.registerEvents(new MobDeathListener(mobManager, playerManager, dropService), this);
         pm.registerEvents(new MobPresentationListener(this, mobManager), this);
         pm.registerEvents(new MobProjectileListener(), this);
+        pm.registerEvents(new VanillaMobSpawnListener(), this);
         pm.registerEvents(new BossDeathListener(forestGuardianBoss, playerManager, dropService), this);
 
         PlayerCommands playerCommands = new PlayerCommands(statsGui);
@@ -71,10 +73,18 @@ public final class ClutchRPGPlugin extends JavaPlugin {
         crpg.setExecutor(adminCommand);
         crpg.setTabCompleter(adminCommand);
 
+        purgeVanillaHostiles(mobManager);
         spawnPointManager.start();
         mobBehaviorController.start();
         Bukkit.getOnlinePlayers().forEach(playerManager::load);
         getComponentLogger().info(Chat.PREFIX.append(Chat.text("ClutchRPG enabled - visual forest combat MVP ready.")));
+    }
+
+    private void purgeVanillaHostiles(MobManager mobManager) {
+        Bukkit.getWorlds().forEach(world -> world.getLivingEntities().stream()
+                .filter(entity -> entity instanceof org.bukkit.entity.Monster || entity instanceof org.bukkit.entity.Slime)
+                .filter(entity -> mobManager.typeOf(entity) == null)
+                .forEach(org.bukkit.entity.Entity::remove));
     }
 
     @Override public void onDisable() {

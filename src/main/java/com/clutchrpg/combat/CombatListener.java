@@ -59,7 +59,7 @@ public final class CombatListener implements Listener {
 
     private void sword(Player player) {
         if (!cooldowns.isReady(player.getUniqueId(), "sword")) return;
-        cooldowns.set(player.getUniqueId(), "sword", Duration.ofMillis(245));
+        cooldowns.set(player.getUniqueId(), "sword", Duration.ofMillis(295));
         long now = System.currentTimeMillis();
         int combo = comboExpires.getOrDefault(player.getUniqueId(), 0L) < now ? 1 : swordCombo.getOrDefault(player.getUniqueId(), 0) % 3 + 1;
         swordCombo.put(player.getUniqueId(), combo);
@@ -67,28 +67,30 @@ public final class CombatListener implements Listener {
 
         Location origin = player.getLocation().add(0, 0.15, 0);
         Vector direction = player.getLocation().getDirection().normalize();
-        double radius = combo == 2 ? 3.4 : combo == 3 ? 3.0 : 2.55;
-        double arc = combo == 2 ? 115.0 : combo == 3 ? 90.0 : 65.0;
+        double radius = combo == 2 ? 5.1 : combo == 3 ? 4.5 : 3.8;
+        double arc = combo == 2 ? 125.0 : combo == 3 ? 105.0 : 82.0;
         double coeff = combo == 1 ? 0.88 : combo == 2 ? 1.10 : 1.62;
 
         player.sendActionBar(Chat.PREFIX.append(Component.text(combo == 1 ? "검 콤보 I - 짧은 베기" : combo == 2 ? "검 콤보 II - 반월 베기" : "검 콤보 III - 내려베기", combo == 3 ? Chat.PURPLE : Chat.GRAY)));
         if (combo == 1) {
             Location start = origin.clone().add(direction.clone().multiply(0.8)).add(0, 1.15, 0);
-            Location end = origin.clone().add(direction.clone().multiply(2.25)).add(0, 0.75, 0);
-            ParticleEffects.line(start, end, ParticleEffects.SILVER_DUST, 18);
-            ParticleEffects.slashArc(origin, direction, 1.85, arc, ParticleEffects.SILVER_DUST, 14);
-            player.getWorld().playSound(player.getLocation(), Sound.ENTITY_PLAYER_ATTACK_SWEEP, 0.45f, 1.75f);
-            player.getWorld().playSound(player.getLocation(), Sound.ITEM_TRIDENT_THROW, 0.28f, 1.9f);
+            Location end = origin.clone().add(direction.clone().multiply(3.0)).add(0, 0.72, 0);
+            ParticleEffects.line(start, end, ParticleEffects.SILVER_DUST, 24);
+            ParticleEffects.slashArc(origin, direction, 2.55, arc, ParticleEffects.SILVER_DUST, 20);
+            player.getWorld().playSound(player.getLocation(), Sound.ENTITY_PLAYER_ATTACK_SWEEP, 0.48f, 1.55f);
+            player.getWorld().playSound(player.getLocation(), Sound.ITEM_TRIDENT_THROW, 0.30f, 1.75f);
         } else if (combo == 2) {
-            ParticleEffects.slashArc(origin, direction, 3.15, arc, ParticleEffects.GOLD_DUST, 38);
-            ParticleEffects.slashArc(origin.clone().add(0, 0.35, 0), direction, 2.45, arc, ParticleEffects.SILVER_DUST, 30);
-            player.getWorld().playSound(player.getLocation(), Sound.ENTITY_PLAYER_ATTACK_SWEEP, 0.75f, 1.05f);
-            player.getWorld().playSound(player.getLocation(), Sound.ITEM_TRIDENT_THROW, 0.35f, 1.35f);
+            Location liftStart = origin.clone().add(direction.clone().multiply(1.05)).add(0, 0.35, 0);
+            Location liftEnd = origin.clone().add(direction.clone().multiply(3.6)).add(0, 1.85, 0);
+            ParticleEffects.line(liftStart, liftEnd, ParticleEffects.GOLD_DUST, 34);
+            ParticleEffects.slashArc(origin.clone().add(0, 0.25, 0), direction, 4.1, arc, ParticleEffects.SILVER_DUST, 40);
+            player.getWorld().playSound(player.getLocation(), Sound.ENTITY_PLAYER_ATTACK_SWEEP, 0.78f, 0.95f);
+            player.getWorld().playSound(player.getLocation(), Sound.ITEM_TRIDENT_THROW, 0.42f, 1.18f);
         } else {
-            ParticleEffects.verticalSlash(origin, direction, 3.0, 2.15, ParticleEffects.GOLD_DUST, 26);
-            ParticleEffects.verticalSlash(origin.clone().add(0, 0.05, 0), direction, 2.55, 1.75, ParticleEffects.SILVER_DUST, 20);
-            Location impact = origin.clone().add(direction.clone().multiply(2.45)).add(0, 0.15, 0);
-            ParticleEffects.expandingRing(impact, 2.65, ParticleEffects.GOLD_DUST, 4, 1L, plugin);
+            ParticleEffects.verticalSlash(origin, direction, 4.15, 2.35, ParticleEffects.GOLD_DUST, 36);
+            ParticleEffects.verticalSlash(origin.clone().add(0, 0.05, 0), direction, 3.5, 1.9, ParticleEffects.SILVER_DUST, 26);
+            Location impact = origin.clone().add(direction.clone().multiply(3.15)).add(0, 0.15, 0);
+            ParticleEffects.expandingRing(impact, 3.45, ParticleEffects.GOLD_DUST, 5, 1L, plugin);
             player.getWorld().spawnParticle(Particle.EXPLOSION, impact.clone().add(0, 0.55, 0), 2, 0.15, 0.15, 0.15, 0);
             player.getWorld().playSound(player.getLocation(), Sound.ENTITY_GENERIC_EXPLODE, 0.55f, 1.45f);
             player.getWorld().playSound(player.getLocation(), Sound.ENTITY_PLAYER_ATTACK_CRIT, 1.0f, 0.78f);
@@ -104,8 +106,11 @@ public final class CombatListener implements Listener {
                     damageService.attack(player, target, coeff, false);
                     target.getWorld().spawnParticle(Particle.CRIT, target.getLocation().add(0, 1.0, 0), combo == 3 ? 18 : 9, 0.35, 0.35, 0.35, 0.05);
                     target.getWorld().spawnParticle(Particle.DUST, target.getLocation().add(0, 1.0, 0), combo == 3 ? 16 : 8, 0.28, 0.28, 0.28, 0, combo == 3 ? ParticleEffects.GOLD_DUST : ParticleEffects.SILVER_DUST);
+                    if (combo == 2) {
+                        target.setVelocity(target.getVelocity().add(new Vector(0, 0.32, 0)));
+                    }
                     if (combo == 3) {
-                        Vector knockback = target.getLocation().toVector().subtract(player.getLocation().toVector()).normalize().multiply(0.38).setY(0.18);
+                        Vector knockback = target.getLocation().toVector().subtract(player.getLocation().toVector()).normalize().multiply(0.48).setY(0.24);
                         target.setVelocity(target.getVelocity().add(knockback));
                     }
                 });
@@ -121,7 +126,7 @@ public final class CombatListener implements Listener {
 
     private void bow(Player player) {
         if (!cooldowns.isReady(player.getUniqueId(), "bow")) return;
-        cooldowns.set(player.getUniqueId(), "bow", Duration.ofMillis(390));
+        cooldowns.set(player.getUniqueId(), "bow", Duration.ofMillis(470));
         Snowball arrow = player.launchProjectile(Snowball.class);
         arrow.setVelocity(player.getLocation().getDirection().multiply(3.25));
         arrow.setGravity(false);
@@ -133,13 +138,13 @@ public final class CombatListener implements Listener {
 
     private void staff(Player player) {
         if (!cooldowns.isReady(player.getUniqueId(), "staff")) return;
-        cooldowns.set(player.getUniqueId(), "staff", Duration.ofMillis(500));
+        cooldowns.set(player.getUniqueId(), "staff", Duration.ofMillis(600));
         Snowball ball = player.launchProjectile(Snowball.class);
         ball.setVelocity(player.getLocation().getDirection().multiply(1.75));
         ball.setGravity(false);
         ball.addScoreboardTag("clutchrpg_staff_orb");
         player.getWorld().spawnParticle(Particle.DUST, player.getEyeLocation(), 20, 0.22, 0.22, 0.22, 0, ParticleEffects.RED_DUST);
-        player.getWorld().spawnParticle(Particle.DUST, player.getEyeLocation(), 20, 0.22, 0.22, 0.22, 0, ParticleEffects.BLUE_DUST);
+        player.getWorld().spawnParticle(Particle.DUST, player.getEyeLocation(), 20, 0.22, 0.22, 0.22, 0, ParticleEffects.PURPLE_DUST);
         player.getWorld().spawnParticle(Particle.END_ROD, player.getEyeLocation(), 6, 0.15, 0.15, 0.15, 0.02);
         player.getWorld().playSound(player.getLocation(), Sound.BLOCK_RESPAWN_ANCHOR_CHARGE, 0.55f, 1.65f);
         trail(ball.getUniqueId(), false);
@@ -156,7 +161,7 @@ public final class CombatListener implements Listener {
                 }
                 Location loc = entity.getLocation();
                 loc.getWorld().spawnParticle(Particle.DUST, loc, arrow ? 7 : 9, 0.08, 0.08, 0.08, 0, arrow ? ParticleEffects.GREEN_DUST : ParticleEffects.RED_DUST);
-                loc.getWorld().spawnParticle(Particle.DUST, loc.clone().add(0, 0.05, 0), arrow ? 3 : 9, 0.1, 0.1, 0.1, 0, arrow ? ParticleEffects.DARK_GREEN_DUST : ParticleEffects.BLUE_DUST);
+                loc.getWorld().spawnParticle(Particle.DUST, loc.clone().add(0, 0.05, 0), arrow ? 3 : 9, 0.1, 0.1, 0.1, 0, arrow ? ParticleEffects.DARK_GREEN_DUST : ParticleEffects.PURPLE_DUST);
                 loc.getWorld().spawnParticle(arrow ? Particle.HAPPY_VILLAGER : Particle.END_ROD, loc, arrow ? 2 : 3, 0.05, 0.05, 0.05, 0.01);
             }
         }.runTaskTimer(plugin, 0L, 1L);
@@ -176,7 +181,7 @@ public final class CombatListener implements Listener {
         if (event.getEntity().getScoreboardTags().contains("clutchrpg_staff_orb")) {
             Location loc = event.getEntity().getLocation();
             ParticleEffects.ring(loc, 2.2, Particle.DUST, ParticleEffects.RED_DUST, 42);
-            ParticleEffects.ring(loc.clone().add(0, 0.08, 0), 1.35, Particle.DUST, ParticleEffects.BLUE_DUST, 32);
+            ParticleEffects.ring(loc.clone().add(0, 0.08, 0), 1.35, Particle.DUST, ParticleEffects.PURPLE_DUST, 32);
             loc.getWorld().spawnParticle(Particle.EXPLOSION, loc, 3, 0.25, 0.25, 0.25, 0);
             loc.getWorld().spawnParticle(Particle.END_ROD, loc, 35, 0.55, 0.35, 0.55, 0.06);
             loc.getWorld().playSound(loc, Sound.ENTITY_GENERIC_EXPLODE, 0.62f, 1.55f);
