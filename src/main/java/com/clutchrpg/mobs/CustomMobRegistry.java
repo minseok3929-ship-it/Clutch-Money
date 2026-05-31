@@ -22,7 +22,10 @@ public final class CustomMobRegistry {
     }
 
     private void register(ForestMobType type, double health, double speed, double knockbackResistance, int maxAlive, double radius, int respawn, int batchMin, int batchMax) {
-        definitions.put(type, new CustomMobDefinition(type, type.id(), type.koreanName(), type.entityType(), type.level(), health, type.exp(), speed, knockbackResistance, maxAlive, radius, respawn, batchMin, batchMax));
+        String mobPath = "resource-pack.mobs." + type.id();
+        String mythicMobId = config.getString(mobPath + ".mythicMobId", type.id());
+        String modelEngineId = config.getString(mobPath + ".modelEngineId", type.id());
+        definitions.put(type, new CustomMobDefinition(type, type.id(), type.koreanName(), type.entityType(), type.level(), health, type.exp(), speed, knockbackResistance, maxAlive, radius, respawn, batchMin, batchMax, mythicMobId, modelEngineId));
     }
 
     public CustomMobDefinition definition(ForestMobType type) {

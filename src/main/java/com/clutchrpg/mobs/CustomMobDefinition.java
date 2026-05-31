@@ -16,6 +16,8 @@ public record CustomMobDefinition(
         double defaultSpawnRadius,
         int defaultRespawnSeconds,
         int defaultBatchMin,
-        int defaultBatchMax
+        int defaultBatchMax,
+        String mythicMobId,
+        String modelEngineId
 ) {
 }

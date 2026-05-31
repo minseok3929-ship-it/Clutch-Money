@@ -50,6 +50,7 @@ public final class ForestGuardianBoss {
         boss.getAttribute(Attribute.MAX_HEALTH).setBaseValue(MAX_HEALTH);
         boss.setHealth(MAX_HEALTH);
         boss.getPersistentDataContainer().set(keys.bossId, PersistentDataType.STRING, ID);
+        boss.getPersistentDataContainer().set(keys.modelEngineId, PersistentDataType.STRING, plugin.getConfig().getString("resource-pack.bosses." + ID + ".modelEngineId", ID));
         boss.setRemoveWhenFarAway(false);
         activeBossId = boss.getUniqueId();
         bossBar = Bukkit.createBossBar("숲의 수호자", BarColor.GREEN, BarStyle.SEGMENTED_10);

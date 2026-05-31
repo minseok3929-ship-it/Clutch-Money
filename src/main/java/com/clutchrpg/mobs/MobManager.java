@@ -41,7 +41,8 @@ public final class MobManager {
     public LivingEntity spawn(ForestMobType type, Location location, int spawnPointId) {
         CustomMobDefinition definition = registry.definition(type);
         LivingEntity entity = spawner.spawn(definition, location);
-        entity.getPersistentDataContainer().set(keys.mobId, PersistentDataType.STRING, type.id());
+        entity.getPersistentDataContainer().set(keys.mobId, PersistentDataType.STRING, definition.id());
+        entity.getPersistentDataContainer().set(keys.modelEngineId, PersistentDataType.STRING, definition.modelEngineId());
         if (spawnPointId >= 0) entity.getPersistentDataContainer().set(keys.spawnPointId, PersistentDataType.INTEGER, spawnPointId);
         entity.setRemoveWhenFarAway(false);
         applyStats(entity, definition);

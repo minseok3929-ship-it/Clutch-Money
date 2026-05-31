@@ -9,8 +9,8 @@ public final class MythicMobsAdapter implements CustomMobSpawnAdapter {
     @Override public boolean isAvailable() { return Bukkit.getPluginManager().isPluginEnabled("MythicMobs"); }
 
     @Override public LivingEntity spawn(CustomMobDefinition definition, Location location) {
-        // Integration seam: keep mobId-driven routing here. The MVP falls back to InternalCustomMobAdapter
-        // until MythicMobs is added as an optional compile/runtime integration.
+        // Integration seam: spawn definition.mythicMobId() here when MythicMobs is added as an
+        // optional compile/runtime integration. Returning null intentionally falls back to internal mobs.
         return null;
     }
 }

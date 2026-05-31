@@ -13,6 +13,8 @@ public final class Keys {
     public final NamespacedKey mobId;
     public final NamespacedKey bossId;
     public final NamespacedKey spawnPointId;
+    public final NamespacedKey customModelData;
+    public final NamespacedKey modelEngineId;
 
     public Keys(Plugin plugin) {
         this.itemId = new NamespacedKey(plugin, "item_id");
@@ -24,5 +26,7 @@ public final class Keys {
         this.mobId = new NamespacedKey(plugin, "mob_id");
         this.bossId = new NamespacedKey(plugin, "boss_id");
         this.spawnPointId = new NamespacedKey(plugin, "spawn_point_id");
+        this.customModelData = new NamespacedKey(plugin, "custom_model_data");
+        this.modelEngineId = new NamespacedKey(plugin, "model_engine_id");
     }
 }

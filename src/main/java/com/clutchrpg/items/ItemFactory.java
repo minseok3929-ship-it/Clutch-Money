@@ -1,5 +1,6 @@
 package com.clutchrpg.items;
 
+import com.clutchrpg.resource.ResourcePackAssets;
 import com.clutchrpg.util.Keys;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,9 +15,13 @@ import org.bukkit.persistence.PersistentDataType;
 
 public final class ItemFactory {
     private final Keys keys;
+    private final ResourcePackAssets assets;
     private final Random random = new Random();
 
-    public ItemFactory(Keys keys) { this.keys = keys; }
+    public ItemFactory(Keys keys, ResourcePackAssets assets) {
+        this.keys = keys;
+        this.assets = assets;
+    }
 
     public ItemStack createWeapon(WeaponType type, Rarity rarity) {
         ItemStack item = new ItemStack(type.material());
@@ -27,6 +32,8 @@ public final class ItemFactory {
         int requiredStr = 4 + rarity.ordinal() * 3 + (type == WeaponType.SWORD ? 3 : 0);
         int requiredDex = 3 + rarity.ordinal() * 2 + (type == WeaponType.BOW ? 4 : 0);
         int requiredInt = type == WeaponType.STAFF ? 6 + rarity.ordinal() * 3 : 0;
+        int customModelData = assets.weaponModelData(type, rarity);
+        if (customModelData > 0) meta.setCustomModelData(customModelData);
         meta.displayName(Component.text("[" + rarity.korean() + "] 숲의 " + type.korean(), rarity.color()));
         List<Component> lore = new ArrayList<>();
         lore.add(Component.text("무기 종류: " + type.korean(), NamedTextColor.GRAY));
@@ -57,6 +64,7 @@ public final class ItemFactory {
         meta.getPersistentDataContainer().set(keys.weaponType, PersistentDataType.STRING, type.name());
         meta.getPersistentDataContainer().set(keys.requiredStats, PersistentDataType.STRING, "STR=" + requiredStr + ";DEX=" + requiredDex + ";INT=" + requiredInt + ";VIT=0;LUK=0");
         meta.getPersistentDataContainer().set(keys.randomOptions, PersistentDataType.STRING, String.join(";", optionData) + ";ATTACK_DAMAGE=" + damage);
+        meta.getPersistentDataContainer().set(keys.customModelData, PersistentDataType.INTEGER, customModelData);
         item.setItemMeta(meta);
         return item;
     }

@@ -20,6 +20,7 @@ import com.clutchrpg.mobs.SpawnPointManager;
 import com.clutchrpg.mobs.VanillaMobSpawnListener;
 import com.clutchrpg.player.PlayerLifecycleListener;
 import com.clutchrpg.player.PlayerManager;
+import com.clutchrpg.resource.ResourcePackAssets;
 import com.clutchrpg.storage.SQLiteStorage;
 import com.clutchrpg.util.Chat;
 import com.clutchrpg.util.CooldownTracker;
@@ -42,14 +43,15 @@ public final class ClutchRPGPlugin extends JavaPlugin {
         storage.open();
         playerManager = new PlayerManager(storage);
         CooldownTracker cooldowns = new CooldownTracker();
-        ItemFactory itemFactory = new ItemFactory(keys);
+        ResourcePackAssets resourcePackAssets = new ResourcePackAssets(this);
+        ItemFactory itemFactory = new ItemFactory(keys, resourcePackAssets);
         DamageService damageService = new DamageService(playerManager, itemFactory);
         MobManager mobManager = new MobManager(this, keys);
         spawnPointManager = new SpawnPointManager(this, mobManager);
         spawnPointManager.load();
         DropService dropService = new DropService(playerManager, itemFactory);
         ForestGuardianBoss forestGuardianBoss = new ForestGuardianBoss(this, keys, mobManager);
-        StatsGui statsGui = new StatsGui(playerManager);
+        StatsGui statsGui = new StatsGui(playerManager, resourcePackAssets);
         mobBehaviorController = new MobBehaviorController(this, mobManager);
 
         PluginManager pm = Bukkit.getPluginManager();
