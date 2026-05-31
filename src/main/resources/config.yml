@@ -1,0 +1,79 @@
+forest:
+  prototype: true
+  notes: "울창한 숲 RPG 전투 MVP - 필드/캠프형 스폰과 RPG 액션 전투 연출 우선"
+  mobs:
+    forest_slime:
+      health: 72.0
+    forest_wolf:
+      health: 48.0
+    goblin:
+      health: 68.0
+    vine_golem:
+      health: 160.0
+  spawn:
+    default-max-alive: 6
+    default-radius: 8
+    default-respawn-interval: 20
+    default-batch-min: 2
+    default-batch-max: 4
+  spawn-points: {}
+
+resource-pack:
+  items:
+    weapons:
+      sword:
+        default: 11000
+        common: 11001
+        rare: 11002
+        epic: 11003
+        legendary: 11004
+        mythic: 11005
+      bow:
+        default: 11100
+        common: 11101
+        rare: 11102
+        epic: 11103
+        legendary: 11104
+        mythic: 11105
+      staff:
+        default: 11200
+        common: 11201
+        rare: 11202
+        epic: 11203
+        legendary: 11204
+        mythic: 11205
+      hammer:
+        default: 11300
+      shield:
+        default: 11400
+  gui:
+    icons:
+      level_info: 12000
+      derived_stats: 12001
+      stat_str: 12010
+      stat_dex: 12011
+      stat_int: 12012
+      stat_vit: 12013
+      stat_luk: 12014
+  mobs:
+    forest_slime:
+      mythicMobId: forest_slime
+      modelEngineId: clutch_forest_slime
+    forest_wolf:
+      mythicMobId: forest_wolf
+      modelEngineId: clutch_forest_wolf
+    goblin:
+      mythicMobId: goblin
+      modelEngineId: clutch_goblin
+    vine_golem:
+      mythicMobId: vine_golem
+      modelEngineId: clutch_vine_golem
+  bosses:
+    forest_guardian:
+      mythicMobId: forest_guardian
+      modelEngineId: clutch_forest_guardian
+  effects:
+    sword_slash: 13000
+    sword_slam: 13001
+    nature_arrow: 13010
+    staff_orb: 13020
