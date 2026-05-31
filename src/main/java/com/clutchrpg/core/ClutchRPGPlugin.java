@@ -44,7 +44,7 @@ public final class ClutchRPGPlugin extends JavaPlugin {
         CooldownTracker cooldowns = new CooldownTracker();
         ItemFactory itemFactory = new ItemFactory(keys);
         DamageService damageService = new DamageService(playerManager, itemFactory);
-        MobManager mobManager = new MobManager(keys);
+        MobManager mobManager = new MobManager(this, keys);
         spawnPointManager = new SpawnPointManager(this, mobManager);
         spawnPointManager.load();
         DropService dropService = new DropService(playerManager, itemFactory);

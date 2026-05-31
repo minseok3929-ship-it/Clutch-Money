@@ -8,6 +8,7 @@ import com.clutchrpg.util.ParticleEffects;
 import java.time.Duration;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.bukkit.Location;
@@ -21,9 +22,9 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import net.kyori.adventure.text.Component;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
-import net.kyori.adventure.text.Component;
 import org.bukkit.util.Vector;
 
 public final class CombatListener implements Listener {
@@ -67,59 +68,73 @@ public final class CombatListener implements Listener {
 
         Location origin = player.getLocation().add(0, 0.15, 0);
         Vector direction = player.getLocation().getDirection().normalize();
-        double radius = combo == 2 ? 5.1 : combo == 3 ? 4.5 : 3.8;
-        double arc = combo == 2 ? 125.0 : combo == 3 ? 105.0 : 82.0;
+        double radius = combo == 2 ? 5.8 : combo == 3 ? 5.2 : 4.6;
+        double arc = combo == 2 ? 140.0 : combo == 3 ? 120.0 : 110.0;
         double coeff = combo == 1 ? 0.88 : combo == 2 ? 1.10 : 1.62;
 
         player.sendActionBar(Chat.PREFIX.append(Component.text(combo == 1 ? "검 콤보 I - 짧은 베기" : combo == 2 ? "검 콤보 II - 반월 베기" : "검 콤보 III - 내려베기", combo == 3 ? Chat.PURPLE : Chat.GRAY)));
         if (combo == 1) {
-            Location start = origin.clone().add(direction.clone().multiply(0.8)).add(0, 1.15, 0);
-            Location end = origin.clone().add(direction.clone().multiply(3.0)).add(0, 0.72, 0);
-            ParticleEffects.line(start, end, ParticleEffects.SILVER_DUST, 24);
-            ParticleEffects.slashArc(origin, direction, 2.55, arc, ParticleEffects.SILVER_DUST, 20);
-            player.getWorld().playSound(player.getLocation(), Sound.ENTITY_PLAYER_ATTACK_SWEEP, 0.48f, 1.55f);
-            player.getWorld().playSound(player.getLocation(), Sound.ITEM_TRIDENT_THROW, 0.30f, 1.75f);
+            ParticleEffects.slashArc(origin.clone().add(0, 0.15, 0), direction, 3.8, arc, ParticleEffects.SILVER_DUST, 52);
+            ParticleEffects.slashArc(origin.clone().add(0, 0.55, 0), direction, 3.25, arc * 0.82, ParticleEffects.GOLD_DUST, 36);
+            player.getWorld().playSound(player.getLocation(), Sound.ENTITY_PLAYER_ATTACK_SWEEP, 0.70f, 1.35f);
+            player.getWorld().playSound(player.getLocation(), Sound.ITEM_TRIDENT_THROW, 0.42f, 1.65f);
         } else if (combo == 2) {
-            Location liftStart = origin.clone().add(direction.clone().multiply(1.05)).add(0, 0.35, 0);
-            Location liftEnd = origin.clone().add(direction.clone().multiply(3.6)).add(0, 1.85, 0);
-            ParticleEffects.line(liftStart, liftEnd, ParticleEffects.GOLD_DUST, 34);
-            ParticleEffects.slashArc(origin.clone().add(0, 0.25, 0), direction, 4.1, arc, ParticleEffects.SILVER_DUST, 40);
-            player.getWorld().playSound(player.getLocation(), Sound.ENTITY_PLAYER_ATTACK_SWEEP, 0.78f, 0.95f);
-            player.getWorld().playSound(player.getLocation(), Sound.ITEM_TRIDENT_THROW, 0.42f, 1.18f);
+            Location liftStart = origin.clone().add(direction.clone().multiply(0.85)).add(0, 0.2, 0);
+            Location liftEnd = origin.clone().add(direction.clone().multiply(4.35)).add(0, 2.45, 0);
+            ParticleEffects.line(liftStart, liftEnd, ParticleEffects.GOLD_DUST, 48);
+            ParticleEffects.line(liftStart.clone().add(0, 0.18, 0), liftEnd.clone().add(0, -0.12, 0), ParticleEffects.SILVER_DUST, 38);
+            ParticleEffects.slashArc(origin.clone().add(0, 0.55, 0), direction, 4.8, arc, ParticleEffects.GOLD_DUST, 58);
+            player.getWorld().playSound(player.getLocation(), Sound.ENTITY_PLAYER_ATTACK_SWEEP, 0.88f, 0.88f);
+            player.getWorld().playSound(player.getLocation(), Sound.ITEM_TRIDENT_RIPTIDE_1, 0.36f, 1.45f);
         } else {
-            ParticleEffects.verticalSlash(origin, direction, 4.15, 2.35, ParticleEffects.GOLD_DUST, 36);
-            ParticleEffects.verticalSlash(origin.clone().add(0, 0.05, 0), direction, 3.5, 1.9, ParticleEffects.SILVER_DUST, 26);
-            Location impact = origin.clone().add(direction.clone().multiply(3.15)).add(0, 0.15, 0);
-            ParticleEffects.expandingRing(impact, 3.45, ParticleEffects.GOLD_DUST, 5, 1L, plugin);
-            player.getWorld().spawnParticle(Particle.EXPLOSION, impact.clone().add(0, 0.55, 0), 2, 0.15, 0.15, 0.15, 0);
-            player.getWorld().playSound(player.getLocation(), Sound.ENTITY_GENERIC_EXPLODE, 0.55f, 1.45f);
-            player.getWorld().playSound(player.getLocation(), Sound.ENTITY_PLAYER_ATTACK_CRIT, 1.0f, 0.78f);
-            player.setVelocity(player.getVelocity().add(direction.clone().multiply(-0.06).setY(0.03)));
+            ParticleEffects.verticalSlash(origin, direction, 5.0, 2.85, ParticleEffects.GOLD_DUST, 54);
+            ParticleEffects.verticalSlash(origin.clone().add(0, 0.05, 0), direction, 4.35, 2.35, ParticleEffects.SILVER_DUST, 42);
+            Location impact = origin.clone().add(direction.clone().multiply(3.75)).add(0, 0.15, 0);
+            ParticleEffects.expandingRing(impact, 4.25, ParticleEffects.GOLD_DUST, 6, 1L, plugin);
+            ParticleEffects.expandingRing(impact.clone().add(0, 0.08, 0), 3.4, ParticleEffects.WOOD_DUST, 5, 1L, plugin);
+            player.getWorld().spawnParticle(Particle.EXPLOSION, impact.clone().add(0, 0.55, 0), 3, 0.2, 0.2, 0.2, 0);
+            player.getWorld().spawnParticle(Particle.DUST_PLUME, impact, 42, 1.8, 0.18, 1.8, 0.08);
+            player.getWorld().playSound(player.getLocation(), Sound.ENTITY_GENERIC_EXPLODE, 0.72f, 1.25f);
+            player.getWorld().playSound(player.getLocation(), Sound.ENTITY_PLAYER_ATTACK_CRIT, 1.0f, 0.68f);
+            player.setVelocity(player.getVelocity().add(direction.clone().multiply(-0.08).setY(0.04)));
         }
 
-        player.getNearbyEntities(radius, 2.3, radius).stream()
+        List<LivingEntity> targets = player.getNearbyEntities(radius, 2.8, radius).stream()
                 .filter(e -> e instanceof LivingEntity && e != player)
                 .map(e -> (LivingEntity) e)
                 .filter(target -> isInFrontCone(player, target, arc, radius))
-                .limit(combo == 1 ? 2 : 6)
-                .forEach(target -> {
-                    damageService.attack(player, target, coeff, false);
-                    target.getWorld().spawnParticle(Particle.CRIT, target.getLocation().add(0, 1.0, 0), combo == 3 ? 18 : 9, 0.35, 0.35, 0.35, 0.05);
-                    target.getWorld().spawnParticle(Particle.DUST, target.getLocation().add(0, 1.0, 0), combo == 3 ? 16 : 8, 0.28, 0.28, 0.28, 0, combo == 3 ? ParticleEffects.GOLD_DUST : ParticleEffects.SILVER_DUST);
-                    if (combo == 2) {
-                        target.setVelocity(target.getVelocity().add(new Vector(0, 0.32, 0)));
-                    }
-                    if (combo == 3) {
-                        Vector knockback = target.getLocation().toVector().subtract(player.getLocation().toVector()).normalize().multiply(0.48).setY(0.24);
-                        target.setVelocity(target.getVelocity().add(knockback));
-                    }
-                });
+                .sorted(Comparator.comparingDouble(target -> target.getLocation().distanceSquared(player.getLocation())))
+                .limit(combo == 1 ? 4 : 8)
+                .toList();
+        targets.forEach(target -> {
+            double dealt = damageService.attack(player, target, coeff, false);
+            playSwordHitFeedback(player, target, combo, dealt);
+            if (combo == 2) {
+                target.setVelocity(target.getVelocity().add(new Vector(0, 0.42, 0)));
+            }
+            if (combo == 3) {
+                Vector away = target.getLocation().toVector().subtract(player.getLocation().toVector());
+                if (away.lengthSquared() < 0.05) away = player.getLocation().getDirection();
+                Vector knockback = away.normalize().multiply(0.58).setY(0.28);
+                target.setVelocity(target.getVelocity().add(knockback));
+            }
+        });
+    }
+
+    private void playSwordHitFeedback(Player player, LivingEntity target, int combo, double dealt) {
+        Location hit = target.getLocation().add(0, Math.max(0.7, target.getHeight() * 0.55), 0);
+        target.getWorld().spawnParticle(Particle.CRIT, hit, combo == 3 ? 28 : combo == 2 ? 20 : 14, 0.42, 0.42, 0.42, 0.07);
+        target.getWorld().spawnParticle(Particle.DUST, hit, combo == 3 ? 26 : 16, 0.34, 0.34, 0.34, 0, combo == 3 ? ParticleEffects.GOLD_DUST : ParticleEffects.SILVER_DUST);
+        target.getWorld().playSound(hit, combo == 3 ? Sound.ENTITY_PLAYER_ATTACK_CRIT : Sound.ENTITY_PLAYER_ATTACK_STRONG, 0.85f, combo == 3 ? 0.72f : 1.05f);
+        player.sendActionBar(Chat.PREFIX.append(Component.text("검 타격 " + String.format(java.util.Locale.KOREA, "%.1f", dealt), combo == 3 ? Chat.PURPLE : Chat.GRAY)));
     }
 
     private boolean isInFrontCone(Player player, LivingEntity target, double degrees, double range) {
         Vector toTarget = target.getLocation().toVector().subtract(player.getLocation().toVector());
         if (toTarget.lengthSquared() > range * range) return false;
-        Vector flatTarget = toTarget.setY(0).normalize();
+        Vector flat = toTarget.clone().setY(0);
+        if (flat.lengthSquared() < 0.35) return true;
+        Vector flatTarget = flat.normalize();
         Vector flatForward = player.getLocation().getDirection().setY(0).normalize();
         return flatTarget.dot(flatForward) >= Math.cos(Math.toRadians(degrees / 2.0));
     }

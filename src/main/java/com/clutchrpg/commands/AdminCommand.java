@@ -36,6 +36,7 @@ public final class AdminCommand implements CommandExecutor, TabCompleter {
         }
         if (args.length == 1 && args[0].equalsIgnoreCase("reload")) {
             plugin.reloadConfig();
+            mobManager.reloadDefinitions();
             spawnPointManager.reload();
             Chat.send(sender, "설정과 스폰 포인트를 다시 불러왔습니다.");
             return true;

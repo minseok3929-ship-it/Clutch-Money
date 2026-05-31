@@ -1,6 +1,15 @@
 forest:
   prototype: true
   notes: "울창한 숲 RPG 전투 MVP - 필드/캠프형 스폰과 RPG 액션 전투 연출 우선"
+  mobs:
+    forest_slime:
+      health: 72.0
+    forest_wolf:
+      health: 48.0
+    goblin:
+      health: 68.0
+    vine_golem:
+      health: 160.0
   spawn:
     default-max-alive: 6
     default-radius: 8

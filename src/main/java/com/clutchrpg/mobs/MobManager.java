@@ -2,6 +2,7 @@ package com.clutchrpg.mobs;
 
 import com.clutchrpg.util.Keys;
 import com.clutchrpg.util.ParticleEffects;
+import java.util.List;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Location;
@@ -16,14 +17,22 @@ import org.bukkit.entity.Wolf;
 import org.bukkit.entity.Zombie;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.plugin.Plugin;
 
 public final class MobManager {
     private final Keys keys;
-    private final CustomMobRegistry registry = new CustomMobRegistry();
+    private final CustomMobRegistry registry;
+    private final CustomMobSpawner spawner;
 
-    public MobManager(Keys keys) { this.keys = keys; }
+    public MobManager(Plugin plugin, Keys keys) {
+        this.keys = keys;
+        this.registry = new CustomMobRegistry(plugin.getConfig());
+        this.spawner = new CustomMobSpawner(List.of(new MythicMobsAdapter(), new InternalCustomMobAdapter()));
+    }
 
     public CustomMobRegistry registry() { return registry; }
+
+    public void reloadDefinitions() { registry.reload(); }
 
     public LivingEntity spawn(ForestMobType type, Location location) {
         return spawn(type, location, -1);
@@ -31,7 +40,7 @@ public final class MobManager {
 
     public LivingEntity spawn(ForestMobType type, Location location, int spawnPointId) {
         CustomMobDefinition definition = registry.definition(type);
-        LivingEntity entity = (LivingEntity) location.getWorld().spawnEntity(location, definition.entityType());
+        LivingEntity entity = spawner.spawn(definition, location);
         entity.getPersistentDataContainer().set(keys.mobId, PersistentDataType.STRING, type.id());
         if (spawnPointId >= 0) entity.getPersistentDataContainer().set(keys.spawnPointId, PersistentDataType.INTEGER, spawnPointId);
         entity.setRemoveWhenFarAway(false);
@@ -50,6 +59,8 @@ public final class MobManager {
     }
 
     private void applyVanillaControl(LivingEntity entity, ForestMobType type) {
+        entity.setCanPickupItems(false);
+        entity.setPersistent(true);
         if (entity instanceof Slime slime) {
             slime.setSize(1);
         }
